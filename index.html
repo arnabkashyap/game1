@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Road 3D | Infinite Pursuit</title>
+    <meta name="description" content="A high-performance 3D infinite runner car game built with Three.js.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Three.js Local -->
+    <script src="three.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <!-- Main Menu -->
+            <div id="main-menu" class="overlay active">
+                <h1 class="glitch-text">ESCAPE 3D</h1>
+                <p class="subtitle">DIMENSIONAL PURSUIT</p>
+                <div class="menu-controls">
+                    <button id="start-btn" class="primary-btn">START ENGINE</button>
+                    <p class="instructions">Use A / D or Arrow Keys to steer</p>
+                </div>
+            </div>
+
+            <!-- Game HUD -->
+            <div id="hud" class="overlay">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="label">DISTANCE</span>
+                        <span id="distance-val" class="value">0m</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">SPEED</span>
+                        <span id="speed-val" class="value">0 km/h</span>
+                    </div>
+                    <div class="stat-item wanted-stat">
+                        <span class="label">WANTED</span>
+                        <span id="wanted-val" class="value">☆☆☆☆☆</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wanted Flash Overlay -->
+            <div id="wanted-overlay" class="flash-overlay">
+                <h2 class="wanted-text">WANTED</h2>
+            </div>
+
+            <!-- Countdown Overlay -->
+            <div id="countdown" class="overlay">
+                <h1 id="countdown-text"></h1>
+            </div>
+
+            <!-- Game Over -->
+            <div id="game-over" class="overlay">
+                <h2 class="crash-text">WASTED</h2>
+                <div class="final-stats">
+                    <p>DISTANCE TRAVELED: <span id="final-distance">0m</span></p>
+                    <p>RANK: <span id="rank-val">ROOKIE</span></p>
+                </div>
+                <button id="restart-btn" class="primary-btn">TRY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
