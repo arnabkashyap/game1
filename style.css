@@ -266,3 +266,50 @@ h1 {
     80% { transform: scale(1.1); opacity: 1; }
     100% { transform: scale(0.8); opacity: 0; }
 }
+/* Orientation Warning */
+#orientation-warning {
+    background: var(--bg-dark);
+    z-index: 9999;
+    text-align: center;
+    padding: 2rem;
+}
+
+#orientation-warning p {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 1rem 0;
+    color: var(--primary);
+}
+
+.rotate-icon {
+    font-size: 4rem;
+    animation: rotate-hint 2s infinite ease-in-out;
+}
+
+.sub-warn {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+}
+
+@keyframes rotate-hint {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+}
+
+/* Show warning only in portrait on small screens */
+@media (orientation: portrait) and (max-width: 1024px) {
+    #orientation-warning {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Landscape UI Adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+    h1 { font-size: 3.5rem; }
+    .subtitle { margin-bottom: 1.5rem; }
+    .primary-btn { padding: 1rem 3rem; font-size: 1rem; }
+    .stats { padding: 0.8rem 1.5rem; transform: scale(0.8); transform-origin: top center; }
+    .crash-text { font-size: 4rem; }
+}
