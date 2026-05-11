@@ -12,7 +12,7 @@ app_port: 3000
 
 A high-performance 3D infinite runner car game built with Three.js.
 
-Check out the Game here: https://arnabkashyap.github.io/game1
+Check out the Game here: (https://hrishikeshdutta-game-arnabk.hf.space/)
 
 ## Features
 - Dynamic difficulty scaling
