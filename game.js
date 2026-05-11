@@ -42,21 +42,32 @@ let engineSound = null;
 
 // Input
 const keys = {};
-let touchX = null;
 window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 // Mobile Touch
-window.addEventListener('touchstart', e => {
-    touchX = e.touches[0].clientX;
-});
-window.addEventListener('touchmove', e => {
-    touchX = e.touches[0].clientX;
-    e.preventDefault();
-}, { passive: false });
-window.addEventListener('touchend', () => {
-    touchX = null;
-});
+const touchControls = { left: false, right: false };
+
+function updateTouch(e) {
+    if (gameState !== 'PLAYING') return;
+    
+    touchControls.left = false;
+    touchControls.right = false;
+    
+    for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].clientX < window.innerWidth / 2) touchControls.left = true;
+        else touchControls.right = true;
+    }
+    
+    if (e.type !== 'touchstart' || e.target.tagName !== 'BUTTON') {
+        e.preventDefault();
+    }
+}
+
+window.addEventListener('touchstart', updateTouch, { passive: false });
+window.addEventListener('touchmove', updateTouch, { passive: false });
+window.addEventListener('touchend', updateTouch, { passive: false });
+window.addEventListener('touchcancel', updateTouch, { passive: false });
 
 class EnvironmentManager {
     constructor() {
@@ -386,9 +397,8 @@ function updateGameplay(delta) {
         engineSound.setPlaybackRate(0.8 + (worldSpeed * 0.5));
     }
 
-    const screenMid = window.innerWidth / 2;
-    if (keys.KeyA || keys.ArrowLeft || (touchX !== null && touchX < screenMid)) targetX = -LANE_WIDTH;
-    else if (keys.KeyD || keys.ArrowRight || (touchX !== null && touchX >= screenMid)) targetX = LANE_WIDTH;
+    if (keys.KeyA || keys.ArrowLeft || touchControls.left) targetX = -LANE_WIDTH;
+    else if (keys.KeyD || keys.ArrowRight || touchControls.right) targetX = LANE_WIDTH;
     else targetX = 0;
 
     player.position.x = THREE.MathUtils.lerp(player.position.x, targetX, 0.1);
@@ -437,5 +447,13 @@ window.addEventListener('load', () => {
         init();
     } else {
         console.error("THREE is not defined!");
+    }
+});
+
+window.addEventListener('resize', () => {
+    if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
     }
 });
