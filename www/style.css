@@ -209,11 +209,9 @@ h1 {
 }
 
 .corner-btn {
-    position: absolute;
-    bottom: -30px;
-    right: -30px;
-    padding: 1.5rem 3rem !important;
-    border-radius: 20px !important;
+    margin-top: 2rem;
+    padding: 1.5rem 4rem !important;
+    border-radius: 100px !important;
 }
 
 .garage-panel {
