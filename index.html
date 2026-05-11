@@ -21,36 +21,45 @@
             <div id="main-menu" class="overlay active">
                 <h1 class="glitch-text">ESCAPE 3D</h1>
                 <p class="subtitle">DIMENSIONAL PURSUIT</p>
-                
-                <div class="garage-panel">
-                    <div class="selection-group">
-                        <label>CHOOSE YOUR RIDE</label>
-                        <div class="car-options">
-                            <button class="car-opt active" data-car="sport">SPORT</button>
-                            <button class="car-opt" data-car="truck">TRUCK</button>
-                            <button class="car-opt" data-car="muscle">MUSCLE</button>
-                        </div>
-                    </div>
-                    
-                    <div class="selection-group">
-                        <label>PAINT JOB</label>
-                        <div class="color-options">
-                            <button class="color-opt active" style="background: #ff3e3e" data-color="#ff3e3e"></button>
-                            <button class="color-opt" style="background: #2196f3" data-color="#2196f3"></button>
-                            <button class="color-opt" style="background: #4caf50" data-color="#4caf50"></button>
-                            <button class="color-opt" style="background: #ffeb3b" data-color="#ffeb3b"></button>
-                            <button class="color-opt" style="background: #ffffff" data-color="#ffffff"></button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="menu-controls">
+                    <button id="to-garage-btn" class="primary-btn">TO GARAGE</button>
+                    <div id="connection-status" class="status-msg"></div>
+                </div>
+            </div>
+
+            <!-- Garage Window -->
+            <div id="garage-window" class="overlay">
+                <div class="modal-content">
+                    <h2 class="modal-title">THE GARAGE</h2>
+                    <div class="garage-panel">
+                        <div class="selection-group">
+                            <label>CHOOSE YOUR RIDE</label>
+                            <div class="car-options">
+                                <button class="car-opt active" data-car="sport">SPORT</button>
+                                <button class="car-opt" data-car="truck">TRUCK</button>
+                                <button class="car-opt" data-car="muscle">MUSCLE</button>
+                            </div>
+                        </div>
+                        
+                        <div class="selection-group">
+                            <label>PAINT JOB</label>
+                            <div class="color-options">
+                                <button class="color-opt active" style="background: #ff3e3e" data-color="#ff3e3e"></button>
+                                <button class="color-opt" style="background: #2196f3" data-color="#2196f3"></button>
+                                <button class="color-opt" style="background: #4caf50" data-color="#4caf50"></button>
+                                <button class="color-opt" style="background: #ffeb3b" data-color="#ffeb3b"></button>
+                                <button class="color-opt" style="background: #ffffff" data-color="#ffffff"></button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="multiplayer-controls">
                         <input type="text" id="player-name" placeholder="Enter Name" maxlength="10">
-                        <button id="start-btn" class="primary-btn">START ENGINE</button>
                     </div>
-                    <p class="instructions">Use A / D or Touch sides to steer</p>
-                    <div id="connection-status" class="status-msg"></div>
+
+                    <p class="instructions" style="margin-top: 1rem;">Use A / D or Touch sides to steer</p>
+                    
+                    <button id="start-btn" class="primary-btn corner-btn">START RACE</button>
                 </div>
             </div>
 

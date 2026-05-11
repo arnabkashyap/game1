@@ -14,7 +14,8 @@ const UI = {
     wanted: document.getElementById('wanted-val'),
     finalDistance: document.getElementById('final-distance'),
     connectionStatus: document.getElementById('connection-status'),
-    playerName: document.getElementById('player-name')
+    playerName: document.getElementById('player-name'),
+    garageWindow: document.getElementById('garage-window')
 };
 
 // Game Constants
@@ -332,6 +333,11 @@ function init() {
     road2.position.z = -ROAD_LENGTH;
     scene.add(road2);
 
+    document.getElementById('to-garage-btn').addEventListener('click', () => {
+        UI.mainMenu.classList.remove('active');
+        UI.garageWindow.classList.add('active');
+    });
+
     document.getElementById('start-btn').addEventListener('click', () => {
         playerName = UI.playerName.value || 'Rider';
         startCountdown();
@@ -440,6 +446,7 @@ function createNameTag(name) {
 function startCountdown() {
     gameState = 'COUNTDOWN';
     UI.mainMenu.classList.remove('active');
+    UI.garageWindow.classList.remove('active');
     UI.gameOver.classList.remove('active');
     UI.hud.classList.remove('active');
     UI.countdown.classList.add('active');

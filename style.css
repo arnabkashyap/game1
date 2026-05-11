@@ -183,18 +183,50 @@ h1 {
     color: white;
 }
 
+.modal-content {
+    background: rgba(10, 10, 15, 0.95);
+    border: 1px solid var(--glass-border);
+    border-radius: 40px;
+    padding: 4rem;
+    width: 90%;
+    max-width: 900px;
+    position: relative;
+    backdrop-filter: blur(30px);
+    box-shadow: 0 30px 100px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 10px;
+    margin-bottom: 3rem;
+    color: white;
+    text-shadow: 0 0 20px var(--primary-glow);
+}
+
+.corner-btn {
+    position: absolute;
+    bottom: -30px;
+    right: -30px;
+    padding: 1.5rem 3rem !important;
+    border-radius: 20px !important;
+}
+
 .garage-panel {
     display: flex;
     gap: 3rem;
-    margin-bottom: 3rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2rem 4rem;
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 2rem;
+    border-radius: 20px;
+    width: 100%;
 }
 
 .selection-group {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -212,6 +244,8 @@ h1 {
 .car-options, .color-options {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .car-opt {
@@ -232,8 +266,8 @@ h1 {
 }
 
 .color-opt {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 3px solid transparent;
     cursor: pointer;
@@ -251,24 +285,28 @@ h1 {
     flex-direction: column;
     gap: 1.5rem;
     align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
 #player-name {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 1rem 2rem;
-    border-radius: 50px;
+    border-radius: 15px;
     color: white;
     font-size: 1.2rem;
     font-family: inherit;
     text-align: center;
     outline: none;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px;
 }
 
 #player-name:focus {
     border-color: var(--primary);
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .status-msg {
