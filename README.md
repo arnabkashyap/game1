@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-=======
-# Escape-3D
-Check out the Game here : https://arnabkashyap.github.io/game1
-
->>>>>>> Stashed changes
 ---
 title: Escape Road 3D
 emoji: 🏎️
@@ -17,6 +11,8 @@ app_port: 3000
 # Escape Road 3D | Infinite Pursuit
 
 A high-performance 3D infinite runner car game built with Three.js.
+
+Check out the Game here: https://arnabkashyap.github.io/game1
 
 ## Features
 - Dynamic difficulty scaling
