@@ -34,9 +34,12 @@ jobs:
 
       - name: Build APK (debug)
         run: |
+          java -version
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
