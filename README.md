@@ -1,3 +1,9 @@
+<<<<<<< Updated upstream
+=======
+# Escape-3D
+Check out the Game here : https://arnabkashyap.github.io/game1
+
+>>>>>>> Stashed changes
 ---
 title: Escape Road 3D
 emoji: 🏎️
