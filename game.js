@@ -42,8 +42,21 @@ let engineSound = null;
 
 // Input
 const keys = {};
+let touchX = null;
 window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
+
+// Mobile Touch
+window.addEventListener('touchstart', e => {
+    touchX = e.touches[0].clientX;
+});
+window.addEventListener('touchmove', e => {
+    touchX = e.touches[0].clientX;
+    e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchend', () => {
+    touchX = null;
+});
 
 class EnvironmentManager {
     constructor() {
@@ -373,8 +386,9 @@ function updateGameplay(delta) {
         engineSound.setPlaybackRate(0.8 + (worldSpeed * 0.5));
     }
 
-    if (keys.KeyA || keys.ArrowLeft) targetX = -LANE_WIDTH;
-    else if (keys.KeyD || keys.ArrowRight) targetX = LANE_WIDTH;
+    const screenMid = window.innerWidth / 2;
+    if (keys.KeyA || keys.ArrowLeft || (touchX !== null && touchX < screenMid)) targetX = -LANE_WIDTH;
+    else if (keys.KeyD || keys.ArrowRight || (touchX !== null && touchX >= screenMid)) targetX = LANE_WIDTH;
     else targetX = 0;
 
     player.position.x = THREE.MathUtils.lerp(player.position.x, targetX, 0.1);
