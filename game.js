@@ -12,7 +12,9 @@ const UI = {
     distance: document.getElementById('distance-val'),
     speed: document.getElementById('speed-val'),
     wanted: document.getElementById('wanted-val'),
-    finalDistance: document.getElementById('final-distance')
+    finalDistance: document.getElementById('final-distance'),
+    connectionStatus: document.getElementById('connection-status'),
+    playerName: document.getElementById('player-name')
 };
 
 // Game Constants
@@ -34,6 +36,13 @@ let targetX = 0;
 let wantedLevel = 0;
 let collisionCount = 0;
 let biomeTimer = 0;
+
+// Customization & Multiplayer
+let selectedCar = 'sport';
+let selectedColor = '#ff3e3e';
+let playerName = 'Rider';
+let socket;
+let otherPlayers = {}; // { id: { mesh, nameTag } }
 
 // Audio
 let crashSound = null;
@@ -184,37 +193,57 @@ class PoliceCar {
 }
 
 function createPlayer() {
-    player = createDetailedCar(0xff3e3e); // Red sports car
+    player = createDetailedCar(selectedColor, false, selectedCar);
     scene.add(player);
 }
 
-function createDetailedCar(color, isPolice = false) {
+function createDetailedCar(color, isPolice = false, type = 'sport') {
     const group = new THREE.Group();
+    let bodySize, cabinSize, cabinPos;
+
+    if (type === 'truck') {
+        bodySize = [2.5, 1.2, 6];
+        cabinSize = [2.3, 1, 1.5];
+        cabinPos = [0, 1.1, -2];
+    } else if (type === 'muscle') {
+        bodySize = [2.4, 0.8, 5];
+        cabinSize = [2.1, 0.6, 2.5];
+        cabinPos = [0, 1.0, 0.5];
+    } else { // sport
+        bodySize = [2.2, 0.6, 4.5];
+        cabinSize = [2, 0.6, 2.5];
+        cabinPos = [0, 1.1, 0.2];
+    }
+
     const body = new THREE.Mesh(
-        new THREE.BoxGeometry(2.2, 0.6, 4.5),
+        new THREE.BoxGeometry(...bodySize),
         new THREE.MeshStandardMaterial({ color: color, metalness: 0.8, roughness: 0.2 })
     );
-    body.position.y = 0.5;
+    body.position.y = bodySize[1] / 2;
     body.castShadow = true;
     group.add(body);
 
     const cabin = new THREE.Mesh(
-        new THREE.BoxGeometry(2, 0.6, 2.5),
+        new THREE.BoxGeometry(...cabinSize),
         new THREE.MeshStandardMaterial({ color: color, metalness: 0.8, roughness: 0.2 })
     );
-    cabin.position.y = 1.1;
-    cabin.position.z = 0.2;
+    cabin.position.set(...cabinPos);
     cabin.castShadow = true;
     group.add(cabin);
 
     const glassMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 1, roughness: 0, opacity: 0.8, transparent: true });
-    const windshield = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.5, 0.1), glassMat);
-    windshield.position.set(0, 1.1, -1.06);
+    const windshield = new THREE.Mesh(new THREE.BoxGeometry(cabinSize[0] * 0.95, cabinSize[1] * 0.8, 0.1), glassMat);
+    windshield.position.set(0, cabinPos[1], cabinPos[2] - (cabinSize[2]/2) - 0.05);
     group.add(windshield);
 
     const wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.4, 16);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-    const wheelPositions = [[-1.2, 0.4, 1.2], [1.2, 0.4, 1.2], [-1.2, 0.4, -1.2], [1.2, 0.4, -1.2]];
+    const wheelPositions = [
+        [-bodySize[0]/2 - 0.1, 0.4, bodySize[2]/3], 
+        [bodySize[0]/2 + 0.1, 0.4, bodySize[2]/3], 
+        [-bodySize[0]/2 - 0.1, 0.4, -bodySize[2]/3], 
+        [bodySize[0]/2 + 0.1, 0.4, -bodySize[2]/3]
+    ];
     wheelPositions.forEach(pos => {
         const wheel = new THREE.Mesh(wheelGeom, wheelMat);
         wheel.rotation.z = Math.PI / 2;
@@ -222,23 +251,24 @@ function createDetailedCar(color, isPolice = false) {
         group.add(wheel);
     });
 
+    // Lights
     const headLight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    headLight.position.set(-0.7, 0.5, -2.26);
+    headLight.position.set(-bodySize[0]/3, 0.5, -bodySize[2]/2 - 0.01);
     group.add(headLight);
     const headLight2 = headLight.clone();
-    headLight2.position.x = 0.7;
+    headLight2.position.x = bodySize[0]/3;
     group.add(headLight2);
 
     const tailLight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-    tailLight.position.set(-0.7, 0.5, 2.26);
+    tailLight.position.set(-bodySize[0]/3, 0.5, bodySize[2]/2 + 0.01);
     group.add(tailLight);
     const tailLight2 = tailLight.clone();
-    tailLight2.position.x = 0.7;
+    tailLight2.position.x = bodySize[0]/3;
     group.add(tailLight2);
 
     if (isPolice) {
         const siren = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 0.4), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-        siren.position.y = 1.4;
+        siren.position.y = cabinPos[1] + (cabinSize[1]/2) + 0.1;
         siren.name = "siren";
         group.add(siren);
     }
@@ -302,10 +332,109 @@ function init() {
     road2.position.z = -ROAD_LENGTH;
     scene.add(road2);
 
-    document.getElementById('start-btn').addEventListener('click', () => startCountdown());
+    document.getElementById('start-btn').addEventListener('click', () => {
+        playerName = UI.playerName.value || 'Rider';
+        startCountdown();
+    });
     document.getElementById('restart-btn').addEventListener('click', () => startCountdown());
 
+    // Customization Listeners
+    document.querySelectorAll('.car-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.car-opt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCar = btn.dataset.car;
+            updatePreview();
+        });
+    });
+
+    document.querySelectorAll('.color-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.color-opt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedColor = btn.dataset.color;
+            updatePreview();
+        });
+    });
+
+    initMultiplayer();
     animate();
+}
+
+function updatePreview() {
+    if (player) scene.remove(player);
+    createPlayer();
+}
+
+function initMultiplayer() {
+    // In a real scenario, this would point to your hosted server
+    // For local testing, we use localhost:3000
+    try {
+        socket = io();
+        
+        socket.on('connect', () => {
+            UI.connectionStatus.textContent = '● ONLINE';
+            UI.connectionStatus.style.color = '#4caf50';
+        });
+
+        socket.on('disconnect', () => {
+            UI.connectionStatus.textContent = '● OFFLINE';
+            UI.connectionStatus.style.color = '#ff3e3e';
+        });
+
+        socket.on('updatePlayers', (data) => {
+            updateOtherPlayers(data);
+        });
+
+        socket.on('playerDisconnected', (id) => {
+            if (otherPlayers[id]) {
+                scene.remove(otherPlayers[id].mesh);
+                scene.remove(otherPlayers[id].nameTag);
+                delete otherPlayers[id];
+            }
+        });
+    } catch (e) {
+        console.log("Multiplayer server not found, running in offline mode.");
+        UI.connectionStatus.textContent = '● OFFLINE MODE';
+    }
+}
+
+function updateOtherPlayers(data) {
+    for (let id in data) {
+        if (id === socket.id) continue;
+        
+        const p = data[id];
+        if (!otherPlayers[id]) {
+            // Create new representation for other player
+            const mesh = createDetailedCar(p.color, false, p.type);
+            const nameTag = createNameTag(p.name);
+            scene.add(mesh);
+            scene.add(nameTag);
+            otherPlayers[id] = { mesh, nameTag };
+        }
+        
+        // Interpolate position
+        otherPlayers[id].mesh.position.lerp(new THREE.Vector3(p.x, 0, p.z - distance), 0.2);
+        otherPlayers[id].nameTag.position.set(otherPlayers[id].mesh.position.x, 2.5, otherPlayers[id].mesh.position.z);
+    }
+}
+
+function createNameTag(name) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 256;
+    canvas.height = 64;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, 256, 64);
+    ctx.font = 'bold 32px Outfit';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText(name, 128, 44);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
+    sprite.scale.set(4, 1, 1);
+    return sprite;
 }
 
 function startCountdown() {
@@ -440,6 +569,16 @@ function updateGameplay(delta) {
     policeCars.forEach(p => p.update(delta));
     if (UI.distance) UI.distance.textContent = `${Math.floor(distance)}m`;
     if (UI.speed) UI.speed.textContent = `${Math.floor(worldSpeed * 150)} km/h`;
+
+    if (socket && socket.connected && gameState === 'PLAYING') {
+        socket.emit('move', {
+            x: player.position.x,
+            z: distance,
+            type: selectedCar,
+            color: selectedColor,
+            name: playerName
+        });
+    }
 }
 
 window.addEventListener('load', () => {

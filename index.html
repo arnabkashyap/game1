@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Three.js Local -->
     <script src="three.min.js"></script>
+    <!-- Multiplayer -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -19,9 +21,36 @@
             <div id="main-menu" class="overlay active">
                 <h1 class="glitch-text">ESCAPE 3D</h1>
                 <p class="subtitle">DIMENSIONAL PURSUIT</p>
+                
+                <div class="garage-panel">
+                    <div class="selection-group">
+                        <label>CHOOSE YOUR RIDE</label>
+                        <div class="car-options">
+                            <button class="car-opt active" data-car="sport">SPORT</button>
+                            <button class="car-opt" data-car="truck">TRUCK</button>
+                            <button class="car-opt" data-car="muscle">MUSCLE</button>
+                        </div>
+                    </div>
+                    
+                    <div class="selection-group">
+                        <label>PAINT JOB</label>
+                        <div class="color-options">
+                            <button class="color-opt active" style="background: #ff3e3e" data-color="#ff3e3e"></button>
+                            <button class="color-opt" style="background: #2196f3" data-color="#2196f3"></button>
+                            <button class="color-opt" style="background: #4caf50" data-color="#4caf50"></button>
+                            <button class="color-opt" style="background: #ffeb3b" data-color="#ffeb3b"></button>
+                            <button class="color-opt" style="background: #ffffff" data-color="#ffffff"></button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="menu-controls">
-                    <button id="start-btn" class="primary-btn">START ENGINE</button>
+                    <div class="multiplayer-controls">
+                        <input type="text" id="player-name" placeholder="Enter Name" maxlength="10">
+                        <button id="start-btn" class="primary-btn">START ENGINE</button>
+                    </div>
                     <p class="instructions">Use A / D or Touch sides to steer</p>
+                    <div id="connection-status" class="status-msg"></div>
                 </div>
             </div>
 

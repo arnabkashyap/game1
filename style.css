@@ -183,6 +183,101 @@ h1 {
     color: white;
 }
 
+.garage-panel {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem 4rem;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.selection-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.selection-group label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.car-options, .color-options {
+    display: flex;
+    gap: 10px;
+}
+
+.car-opt {
+    padding: 0.8rem 1.5rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.car-opt.active {
+    background: white;
+    color: black;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.color-opt {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.color-opt.active {
+    border-color: white;
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.multiplayer-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+#player-name {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    color: white;
+    font-size: 1.2rem;
+    font-family: inherit;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#player-name:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.status-msg {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--secondary);
+    font-weight: 700;
+}
+
 /* Glitch Animation */
 @keyframes glitch {
     0% { transform: translate(0); }
