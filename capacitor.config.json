@@ -1,0 +1,9 @@
+{
+  "appId": "com.escaperoad.game",
+  "appName": "Escape Road 3D",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  }
+}

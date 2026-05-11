@@ -2,6 +2,16 @@
  * Escape Road 3D - Robust Implementation
  */
 
+import { 
+    INITIAL_SPEED, 
+    MAX_SPEED, 
+    calculateWorldSpeed, 
+    calculateWantedLevel, 
+    calculateRank, 
+    getTrafficConfig, 
+    getPoliceInterval 
+} from './logic.js';
+
 const UI = {
     mainMenu: document.getElementById('main-menu'),
     hud: document.getElementById('hud'),
@@ -21,8 +31,6 @@ const UI = {
 // Game Constants
 const LANE_WIDTH = 6;
 const ROAD_LENGTH = 100;
-const INITIAL_SPEED = 0.4;
-const MAX_SPEED = 1.2;
 const BIOME_DURATION = 30;
 
 // Globals
@@ -37,6 +45,7 @@ let targetX = 0;
 let wantedLevel = 0;
 let collisionCount = 0;
 let biomeTimer = 0;
+let policeSpawnTimer = 0;
 
 // Customization & Multiplayer
 let selectedCar = 'sport';
@@ -61,15 +70,26 @@ const touchControls = { left: false, right: false };
 function updateTouch(e) {
     if (gameState !== 'PLAYING') return;
     
-    touchControls.left = false;
-    touchControls.right = false;
+    let leftPressed = false;
+    let rightPressed = false;
     
     for (let i = 0; i < e.touches.length; i++) {
-        if (e.touches[i].clientX < window.innerWidth / 2) touchControls.left = true;
-        else touchControls.right = true;
+        if (e.touches[i].clientX < window.innerWidth / 2) leftPressed = true;
+        else rightPressed = true;
+    }
+
+    // Neutral if both or neither pressed
+    if (leftPressed && rightPressed) {
+        touchControls.left = false;
+        touchControls.right = false;
+    } else {
+        touchControls.left = leftPressed;
+        touchControls.right = rightPressed;
     }
     
-    if (e.type !== 'touchstart' || e.target.tagName !== 'BUTTON') {
+    // Prevent default except on buttons
+    const target = e.target;
+    if (target.tagName !== 'BUTTON') {
         e.preventDefault();
     }
 }
@@ -109,12 +129,14 @@ class EnvironmentManager {
 
     createBuilding() {
         const h = 10 + Math.random() * 20;
-        const w = 4 + Math.random() * 4;
+        const w = 6 + Math.random() * 5; // Matches spec: 6-11m wide
         const mesh = new THREE.Mesh(
             new THREE.BoxGeometry(w, h, w),
             new THREE.MeshStandardMaterial({ color: 0x333333 })
         );
         mesh.position.y = h / 2;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
         return mesh;
     }
 
@@ -122,9 +144,11 @@ class EnvironmentManager {
         const group = new THREE.Group();
         const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x4d2600 }));
         trunk.position.y = 1;
+        trunk.castShadow = true;
         group.add(trunk);
         const fol = new THREE.Mesh(new THREE.ConeGeometry(2, 6, 8), new THREE.MeshStandardMaterial({ color: 0x0a3d0a }));
         fol.position.y = 5;
+        fol.castShadow = true;
         group.add(fol);
         return group;
     }
@@ -166,31 +190,47 @@ class EnvironmentManager {
 }
 
 class PoliceCar {
-    constructor() {
-        this.mesh = createDetailedCar(0xeeeeee, true);
-        this.mesh.position.set(0, 0, 20); 
+    constructor(isAhead = true) {
+        this.mesh = createDetailedCar(0xeeeeee, true, 'sport');
+        this.isAhead = isAhead;
+        
+        // Spawn ahead or behind based on flag
+        const spawnZ = isAhead ? -100 : 50;
+        this.mesh.position.set((Math.random() - 0.5) * LANE_WIDTH * 2, 0, spawnZ);
         scene.add(this.mesh);
         this.active = true;
     }
 
     update(delta) {
-        this.mesh.position.z = THREE.MathUtils.lerp(this.mesh.position.z, -5, delta * 0.5);
-        this.mesh.position.x = THREE.MathUtils.lerp(this.mesh.position.x, player.position.x, delta * 2);
+        // Chase player logic: lerp Z towards a position near player (0)
+        // If ahead, lerp towards -5 (ahead of player but behind obstacles)
+        // If behind, lerp towards 5 (visible behind player)
+        const targetZ = this.isAhead ? -5 : 5;
+        this.mesh.position.z = THREE.MathUtils.lerp(this.mesh.position.z, targetZ, delta * 0.4);
+        
+        // Lerp X towards player X
+        this.mesh.position.x = THREE.MathUtils.lerp(this.mesh.position.x, player.position.x, delta * 1.5);
         
         const siren = this.mesh.getObjectByName("siren");
         if (siren) {
             siren.material.color.set(Math.sin(Date.now() * 0.01) > 0 ? 0xff0000 : 0x0000ff);
         }
+
         const pBox = new THREE.Box3().setFromObject(player);
         const polBox = new THREE.Box3().setFromObject(this.mesh);
+        
         if (pBox.intersectsBox(polBox)) {
-            if (crashSound && crashSound.buffer) {
-                if (crashSound.isPlaying) crashSound.stop();
-                crashSound.play();
-            }
-            endGame();
+            triggerCrash();
         }
     }
+}
+
+function triggerCrash() {
+    if (crashSound && crashSound.buffer) {
+        if (crashSound.isPlaying) crashSound.stop();
+        crashSound.play();
+    }
+    endGame();
 }
 
 function createPlayer() {
@@ -203,16 +243,16 @@ function createDetailedCar(color, isPolice = false, type = 'sport') {
     let bodySize, cabinSize, cabinPos;
 
     if (type === 'truck') {
-        bodySize = [2.5, 1.2, 6];
-        cabinSize = [2.3, 1, 1.5];
-        cabinPos = [0, 1.1, -2];
+        bodySize = [2.5, 1.2, 6.0];
+        cabinSize = [2.3, 1.0, 1.5];
+        cabinPos = [0, 1.1, -2.0];
     } else if (type === 'muscle') {
-        bodySize = [2.4, 0.8, 5];
+        bodySize = [2.4, 0.8, 5.0];
         cabinSize = [2.1, 0.6, 2.5];
         cabinPos = [0, 1.0, 0.5];
     } else { // sport
         bodySize = [2.2, 0.6, 4.5];
-        cabinSize = [2, 0.6, 2.5];
+        cabinSize = [2.0, 0.6, 2.5];
         cabinPos = [0, 1.1, 0.2];
     }
 
@@ -232,11 +272,13 @@ function createDetailedCar(color, isPolice = false, type = 'sport') {
     cabin.castShadow = true;
     group.add(cabin);
 
-    const glassMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 1, roughness: 0, opacity: 0.8, transparent: true });
+    // Windshield
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 1.0, roughness: 0, opacity: 0.8, transparent: true });
     const windshield = new THREE.Mesh(new THREE.BoxGeometry(cabinSize[0] * 0.95, cabinSize[1] * 0.8, 0.1), glassMat);
     windshield.position.set(0, cabinPos[1], cabinPos[2] - (cabinSize[2]/2) - 0.05);
     group.add(windshield);
 
+    // Wheels
     const wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.4, 16);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
     const wheelPositions = [
@@ -373,8 +415,6 @@ function updatePreview() {
 }
 
 function initMultiplayer() {
-    // In a real scenario, this would point to your hosted server
-    // For local testing, we use localhost:3000
     try {
         socket = io();
         
@@ -411,7 +451,6 @@ function updateOtherPlayers(data) {
         
         const p = data[id];
         if (!otherPlayers[id]) {
-            // Create new representation for other player
             const mesh = createDetailedCar(p.color, false, p.type);
             const nameTag = createNameTag(p.name);
             scene.add(mesh);
@@ -419,7 +458,6 @@ function updateOtherPlayers(data) {
             otherPlayers[id] = { mesh, nameTag };
         }
         
-        // Interpolate position
         otherPlayers[id].mesh.position.lerp(new THREE.Vector3(p.x, 0, p.z - distance), 0.2);
         otherPlayers[id].nameTag.position.set(otherPlayers[id].mesh.position.x, 2.5, otherPlayers[id].mesh.position.z);
     }
@@ -491,6 +529,7 @@ function startGame() {
     }
 
     UI.hud.classList.add('active');
+    policeSpawnTimer = 0;
     updateWantedUI();
 }
 
@@ -498,6 +537,12 @@ function updateWantedUI() {
     let s = '';
     for (let i = 0; i < 5; i++) s += i < wantedLevel ? '★' : '☆';
     if (UI.wanted) UI.wanted.textContent = s;
+}
+
+function triggerWantedFlash() {
+    UI.wantedOverlay.classList.remove('active');
+    void UI.wantedOverlay.offsetWidth; // Trigger reflow
+    UI.wantedOverlay.classList.add('active');
 }
 
 function endGame() {
@@ -508,6 +553,12 @@ function endGame() {
     UI.hud.classList.remove('active');
     UI.gameOver.classList.add('active');
     if (UI.finalDistance) UI.finalDistance.textContent = `${Math.floor(distance)}m`;
+    
+    // Calculate Rank
+    const rankVal = document.getElementById('rank-val');
+    if (rankVal) {
+        rankVal.textContent = calculateRank(distance);
+    }
 }
 
 function animate() {
@@ -525,8 +576,32 @@ function animate() {
 
 function updateGameplay(delta) {
     distance += worldSpeed * 2;
-    worldSpeed = Math.min(MAX_SPEED, INITIAL_SPEED + distance / 5000);
+    worldSpeed = calculateWorldSpeed(distance);
     env.update(delta);
+
+    // Progressive Wanted Level
+    const newWanted = calculateWantedLevel(distance);
+
+    if (newWanted > wantedLevel) {
+        wantedLevel = newWanted;
+        updateWantedUI();
+        triggerWantedFlash();
+    }
+
+    // Police Spawning Logic (Interval based)
+    if (wantedLevel >= 2) {
+        policeSpawnTimer += delta;
+        const interval = getPoliceInterval(wantedLevel);
+
+        if (policeSpawnTimer > interval) {
+            policeSpawnTimer = 0;
+            const count = (wantedLevel >= 3) ? (Math.random() > 0.5 ? 2 : 1) : 1;
+            for(let i=0; i<count; i++) {
+                const isAhead = (wantedLevel >= 3) ? (Math.random() > 0.5) : true;
+                policeCars.push(new PoliceCar(isAhead));
+            }
+        }
+    }
 
     // Update engine pitch based on speed
     if (engineSound && engineSound.isPlaying) {
@@ -546,13 +621,19 @@ function updateGameplay(delta) {
     if (road1.position.z > ROAD_LENGTH) road1.position.z = road2.position.z - ROAD_LENGTH;
     if (road2.position.z > ROAD_LENGTH) road2.position.z = road1.position.z - ROAD_LENGTH;
 
-    if (Math.random() < 0.02 + (distance / 50000)) {
-        const colors = [0x333333, 0xeeeeee, 0x2196f3, 0xffcc00];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        const obs = createDetailedCar(randomColor);
-        obs.position.set((Math.floor(Math.random() * 3) - 1) * LANE_WIDTH, 0, -100);
-        scene.add(obs);
-        obstacles.push(obs);
+    // Traffic Density based on Wanted Level
+    const currentCfg = getTrafficConfig(wantedLevel);
+    const displaySpeed = worldSpeed * 150;
+
+    if (obstacles.length < currentCfg.max && displaySpeed > currentCfg.speed) {
+        if (Math.random() < currentCfg.rate) {
+            const colors = [0x333333, 0xeeeeee, 0x2196f3, 0xffcc00];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            const obs = createDetailedCar(randomColor);
+            obs.position.set((Math.floor(Math.random() * 3) - 1) * LANE_WIDTH, 0, -100);
+            scene.add(obs);
+            obstacles.push(obs);
+        }
     }
 
     const pBox = new THREE.Box3().setFromObject(player);
@@ -561,11 +642,7 @@ function updateGameplay(delta) {
         o.position.z += worldSpeed * 100 * delta;
         const oBox = new THREE.Box3().setFromObject(o);
         if (pBox.intersectsBox(oBox)) {
-            if (crashSound && crashSound.buffer) {
-                if (crashSound.isPlaying) crashSound.stop();
-                crashSound.play();
-            }
-            endGame();
+            triggerCrash();
             return; 
         } else if (o.position.z > 20) {
             scene.remove(o);
@@ -603,3 +680,4 @@ window.addEventListener('resize', () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 });
+
