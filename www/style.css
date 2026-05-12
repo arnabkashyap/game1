@@ -19,19 +19,22 @@
     box-sizing: border-box;
 }
 
+html {
+    background-color: #000000;
+}
+
 body {
     background-color: #000000;
     color: var(--text-white);
     font-family: var(--font-main);
     overflow: hidden;
-    height: 100vh;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    height: 100dvh;
 }
 
 #game-container {
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
     overflow: hidden;
     background-color: #000000;
 }
@@ -40,6 +43,7 @@ canvas {
     display: block;
     width: 100% !important;
     height: 100% !important;
+    background-color: #000000;
 }
 
 #ui-layer {
@@ -68,7 +72,7 @@ canvas {
     visibility: hidden;
     transition: opacity 0.5s ease, visibility 0.5s;
     pointer-events: none;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* No padding on overlay — it fills the full screen */
 }
 
 .overlay.active {
@@ -81,7 +85,7 @@ canvas {
     background: transparent;
     backdrop-filter: none;
     justify-content: flex-start;
-    padding: calc(2rem + env(safe-area-inset-top)) calc(2rem + env(safe-area-inset-right)) 2rem calc(2rem + env(safe-area-inset-left));
+    padding: 2rem;
     pointer-events: none;
 }
 

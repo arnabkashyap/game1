@@ -4,6 +4,10 @@
   "webDir": "www",
   "server": {
     "androidScheme": "https",
-    "hostname": "localhost"
+    "hostname": "localhost",
+    "allowNavigation": ["*"]
+  },
+  "android": {
+    "allowMixedContent": true
   }
 }

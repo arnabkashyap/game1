@@ -673,11 +673,21 @@ window.addEventListener('load', () => {
     }
 });
 
-window.addEventListener('resize', () => {
+function onResize() {
     if (camera && renderer) {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-});
+        // Use visualViewport if available (more accurate on mobile WebView)
+        const vv = window.visualViewport;
+        const w = vv ? vv.width : window.innerWidth;
+        const h = vv ? vv.height : window.innerHeight;
 
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    }
+}
+
+// Register both standard resize and visualViewport resize
+window.addEventListener('resize', onResize);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onResize);
+}
