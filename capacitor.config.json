@@ -3,11 +3,16 @@
   "appName": "Escape Road 3D",
   "webDir": "www",
   "server": {
-    "androidScheme": "https",
+    "androidScheme": "http",
     "hostname": "localhost",
-    "allowNavigation": ["*"]
+    "allowNavigation": [
+      "10.0.2.2",
+      "localhost",
+      "*"
+    ]
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "loggingBehavior": "production"
   }
 }

@@ -438,11 +438,32 @@ function updatePreview() {
 
 function initMultiplayer() {
     try {
-        socket = io();
+        // DETECT SERVER URL:
+        // 1. If running in browser (localhost), use localhost:3000
+        // 2. If running on Android Emulator, use 10.0.2.2:3000
+        // 3. FALLBACK: Replace 'YOUR_COMPUTER_IP' with your actual local IP (e.g. 192.168.1.5)
+        let serverUrl = 'http://localhost:3000';
+
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            serverUrl = 'http://localhost:3000';
+        } else if (navigator.userAgent.includes('Android')) {
+            // Typical emulator gateway
+            serverUrl = 'http://10.0.2.2:3000';
+        } else {
+            // Replace this with your actual local IP address for physical device testing
+            serverUrl = 'http://YOUR_COMPUTER_IP:3000';
+        }
+
+        socket = io(serverUrl);
         
         socket.on('connect', () => {
             UI.connectionStatus.textContent = '● ONLINE';
             UI.connectionStatus.style.color = '#4caf50';
+        });
+
+        socket.on('connect_error', () => {
+            UI.connectionStatus.textContent = '● SERVER UNREACHABLE';
+            UI.connectionStatus.style.color = '#ff9800';
         });
 
         socket.on('disconnect', () => {
