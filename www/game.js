@@ -325,11 +325,13 @@ function init() {
     scene.background = new THREE.Color(0x88aabb);
     scene.fog = new THREE.FogExp2(0x88aabb, 0.015);
 
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const initW = Math.max(window.innerWidth, window.screen.availWidth);
+    const initH = Math.max(window.innerHeight, window.screen.availHeight);
+    camera = new THREE.PerspectiveCamera(75, initW / initH, 0.1, 1000);
     camera.position.set(0, 5, 10);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(initW, initH);
     renderer.shadowMap.enabled = true;
     document.getElementById('game-container').appendChild(renderer.domElement);
 
@@ -412,15 +414,9 @@ function init() {
         const ro = new ResizeObserver(() => {
             const availH = window.screen.availHeight;
             const availW = window.screen.availWidth;
-            const currentH = container.offsetHeight;
-
-            // If container is smaller than available screen, force restore
-            if (currentH < availH) {
+            if (container.offsetHeight < availH) {
                 document.body.style.height = availH + 'px';
-                document.body.style.width = availW + 'px';
                 container.style.height = availH + 'px';
-                container.style.width = availW + 'px';
-
                 if (camera && renderer) {
                     camera.aspect = availW / availH;
                     camera.updateProjectionMatrix();
@@ -701,9 +697,11 @@ window.addEventListener('load', () => {
 
 function onResize() {
     if (camera && renderer) {
-        camera.aspect = window.innerWidth / window.innerHeight;
+        const w = Math.max(window.innerWidth, window.screen.availWidth);
+        const h = Math.max(window.innerHeight, window.screen.availHeight);
+        camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(w, h);
     }
 }
 
