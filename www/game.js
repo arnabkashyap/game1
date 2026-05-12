@@ -325,13 +325,11 @@ function init() {
     scene.background = new THREE.Color(0x88aabb);
     scene.fog = new THREE.FogExp2(0x88aabb, 0.015);
 
-    const initW = window.screen.width;
-    const initH = window.screen.height;
-    camera = new THREE.PerspectiveCamera(75, initW / initH, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 10);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(initW, initH);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.getElementById('game-container').appendChild(renderer.domElement);
 
@@ -407,25 +405,30 @@ function init() {
         });
     });
 
-    // Fullscreen restoration workaround for Android Keyboard
-    if (UI.playerName) {
-        UI.playerName.addEventListener('blur', () => {
-            // Small delay ensures keyboard has fully closed before we measure
-            setTimeout(forceFullScreen, 350);
-        });
-    }
+    // Safety net: if the Android WebView resizes unexpectedly (e.g. keyboard),
+    // force the container + renderer back to full available height.
+    const container = document.getElementById('game-container');
+    if (container && window.ResizeObserver) {
+        const ro = new ResizeObserver(() => {
+            const availH = window.screen.availHeight;
+            const availW = window.screen.availWidth;
+            const currentH = container.offsetHeight;
 
-    // Also listen for visualViewport resize as a backup trigger
-    if (window.visualViewport) {
-        let lastKnownHeight = window.visualViewport.height;
-        window.visualViewport.addEventListener('resize', () => {
-            const currentHeight = window.visualViewport.height;
-            // If viewport grew (keyboard closed), restore full screen
-            if (currentHeight > lastKnownHeight) {
-                setTimeout(forceFullScreen, 100);
+            // If container is smaller than available screen, force restore
+            if (currentH < availH) {
+                document.body.style.height = availH + 'px';
+                document.body.style.width = availW + 'px';
+                container.style.height = availH + 'px';
+                container.style.width = availW + 'px';
+
+                if (camera && renderer) {
+                    camera.aspect = availW / availH;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(availW, availH);
+                }
             }
-            lastKnownHeight = currentHeight;
         });
+        ro.observe(container);
     }
 
     initMultiplayer();
@@ -696,43 +699,11 @@ window.addEventListener('load', () => {
     }
 });
 
-/**
- * Force full physical screen size after keyboard closes.
- * window.screen.height is the immutable physical pixel height,
- * unlike window.innerHeight which gets corrupted by keyboard resize.
- */
-function forceFullScreen() {
-    const fullW = window.screen.width;
-    const fullH = window.screen.height;
-
-    // Force CSS containers to physical screen size
-    document.body.style.width = fullW + 'px';
-    document.body.style.height = fullH + 'px';
-
-    const container = document.getElementById('game-container');
-    if (container) {
-        container.style.width = fullW + 'px';
-        container.style.height = fullH + 'px';
-    }
-
-    // Force the Three.js renderer + camera to physical screen size
-    if (camera && renderer) {
-        camera.aspect = fullW / fullH;
-        camera.updateProjectionMatrix();
-        renderer.setSize(fullW, fullH);
-    }
-}
-
 function onResize() {
     if (camera && renderer) {
-        // Prefer screen dimensions as the ceiling for the viewport
-        const vv = window.visualViewport;
-        const w = vv ? Math.max(vv.width, window.screen.width) : window.screen.width;
-        const h = vv ? Math.max(vv.height, window.screen.height) : window.screen.height;
-
-        camera.aspect = w / h;
+        camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
+        renderer.setSize(window.innerWidth, window.innerHeight);
     }
 }
 
