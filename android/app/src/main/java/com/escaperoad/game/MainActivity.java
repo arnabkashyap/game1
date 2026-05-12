@@ -2,8 +2,6 @@ package com.escaperoad.game;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
