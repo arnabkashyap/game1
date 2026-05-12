@@ -450,10 +450,44 @@ h1 {
 }
 
 /* Landscape UI Adjustments */
-@media (orientation: landscape) and (max-height: 500px) {
+@media (orientation: landscape) and (max-height: 600px) {
+    h1 { font-size: 3rem; }
+    .subtitle { margin-bottom: 1rem; }
+    .primary-btn { padding: 0.8rem 2.5rem; font-size: 1rem; }
+    .stats { padding: 0.8rem 1.5rem; transform: scale(0.7); transform-origin: top center; }
+    .crash-text { font-size: 3.5rem; }
+    
+    .modal-content { 
+        padding: 1.5rem 2.5rem; 
+        border-radius: 25px;
+        width: 95%;
+    }
+    .modal-title { 
+        font-size: 1.8rem; 
+        margin-bottom: 1rem; 
+        letter-spacing: 6px; 
+    }
+    .garage-panel { 
+        gap: 1.5rem; 
+        padding: 1rem; 
+        margin-bottom: 0.8rem; 
+    }
+    .selection-group label { font-size: 0.7rem; letter-spacing: 3px; }
+    .car-opt { padding: 0.5rem 1rem; font-size: 0.8rem; }
+    .color-opt { width: 32px; height: 32px; }
+    .multiplayer-controls { margin-bottom: 0.5rem; gap: 0.5rem; }
+    #player-name { padding: 0.7rem 1.2rem; font-size: 1rem; }
+    .instructions { margin-top: 0.2rem; font-size: 0.8rem; }
+    .corner-btn { margin-top: 0.8rem; padding: 1rem 3rem !important; }
+}
+
+@media (max-width: 600px) {
+    .garage-panel {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .modal-content {
+        padding: 2rem;
+    }
     h1 { font-size: 3.5rem; }
-    .subtitle { margin-bottom: 1.5rem; }
-    .primary-btn { padding: 1rem 3rem; font-size: 1rem; }
-    .stats { padding: 0.8rem 1.5rem; transform: scale(0.8); transform-origin: top center; }
-    .crash-text { font-size: 4rem; }
 }
