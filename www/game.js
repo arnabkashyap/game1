@@ -55,6 +55,7 @@ let socket;
 let otherPlayers = {}; // { id: { mesh, nameTag } }
 
 // Audio
+let audioListener = null;
 let crashSound = null;
 let startBeepSound = null;
 let engineSound = null;
@@ -337,26 +338,28 @@ function init() {
 
     clock = new THREE.Clock();
 
-    const listener = new THREE.AudioListener();
-    camera.add(listener);
-    crashSound = new THREE.Audio(listener);
-    startBeepSound = new THREE.Audio(listener);
-    engineSound = new THREE.Audio(listener);
+    audioListener = new THREE.AudioListener();
+    camera.add(audioListener);
+    crashSound = new THREE.Audio(audioListener);
+    startBeepSound = new THREE.Audio(audioListener);
+    engineSound = new THREE.Audio(audioListener);
     
     const audioLoader = new THREE.AudioLoader();
     audioLoader.load('faahhhhhhhh.mp3', buffer => {
         crashSound.setBuffer(buffer);
         crashSound.setVolume(0.5);
-    });
+    }, undefined, err => console.error("Error loading crash sound:", err));
+
     audioLoader.load('transcendedlifting-race-start-beeps-125125.mp3', buffer => {
         startBeepSound.setBuffer(buffer);
         startBeepSound.setVolume(0.6);
-    });
+    }, undefined, err => console.error("Error loading beep sound:", err));
+
     audioLoader.load('u_xg7ssi08yr-race-car-362035.mp3', buffer => {
         engineSound.setBuffer(buffer);
         engineSound.setVolume(0.3);
         engineSound.setLoop(true);
-    });
+    }, undefined, err => console.error("Error loading engine sound:", err));
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     const dL = new THREE.DirectionalLight(0xffffff, 1);
@@ -383,6 +386,10 @@ function init() {
     });
 
     document.getElementById('start-btn').addEventListener('click', () => {
+        // Resume audio context on user interaction
+        if (audioListener && audioListener.context.state === 'suspended') {
+            audioListener.context.resume();
+        }
         playerName = UI.playerName.value || 'Rider';
         startCountdown();
     });
