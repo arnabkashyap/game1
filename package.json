@@ -4,7 +4,8 @@
   "description": "Multiplayer 3D Infinite Runner",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.3",
